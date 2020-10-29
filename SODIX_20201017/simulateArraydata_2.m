@@ -1,6 +1,6 @@
 function [p, Fs] = simulateArraydata_2(source_info, mic_info, coherent, c, Fs, duration, U, direct_amp)
 % hhj0920
-%¿¼ÂÇÔ´µÄ·½ÏòĞÔ£¬ÔÚ²»Í¬Âó¿Ë·çÇ¿¶ÈÇ°¼ÓÈë¼ÆËã·½ÏòÏµÊı
+%è€ƒè™‘æºçš„æ–¹å‘æ€§ï¼Œåœ¨ä¸åŒéº¦å…‹é£å¼ºåº¦å‰åŠ å…¥è®¡ç®—æ–¹å‘ç³»æ•°
 % function [p, Fs] = simulateArraydata(source_info, mic_info, c, Fs, duration, U)
 %simulateArraydata   Simulates pressure data for microphone array. 
 %   simulateArraydata(source_info, mic_info, c, Fs, duration, U) generates
@@ -23,11 +23,11 @@ function [p, Fs] = simulateArraydata_2(source_info, mic_info, coherent, c, Fs, d
 
 N_source = size(source_info, 1);
 N_mic = size(mic_info, 1);
-f_min = min(source_info(:, 4));% ÆµÂÊmin
+f_min = min(source_info(:, 4));% é¢‘ç‡min
 f_max = max(source_info(:, 4));
 
 % Array center
-x_ac = mean(mic_info,1);  %ÎŞ·¨¼ÆËãÕóÁĞÖĞĞÄÉùÑ¹1»¡ĞÎÕóÁĞ2£ºÖ¸ÏòĞÔ
+x_ac = mean(mic_info,1);  %æ— æ³•è®¡ç®—é˜µåˆ—ä¸­å¿ƒå£°å‹1å¼§å½¢é˜µåˆ—2ï¼šæŒ‡å‘æ€§
 
 if nargin < 3
     % coherent signal
@@ -68,11 +68,11 @@ t = 0:1/Fs:(duration-1/Fs);
 N_samples = length(t);
 
 p = zeros(N_mic, N_samples);
-p1 = zeros(N_mic, N_samples);
+
 % r_ac = 1;
 for I = 1:N_source
     r_ac = norm(x_ac-source_info(I, 1:3));
-    
+%     source_info(I, 4)=0;
     % White noise or tonal
     if source_info(I, 4)==0
         % Before generating white noise, need to determine the shift in
@@ -81,7 +81,7 @@ for I = 1:N_source
         
 
         max_shift = round(Fs*(r_max-r_ac)/c) * ((r_max-r_ac)>0);
-        % Fs*(r_max-r_ac)/c ÑÓ³Ù²ÉÑùÊı
+        % Fs*(r_max-r_ac)/c å»¶è¿Ÿé‡‡æ ·æ•°
 %         bb=((r_max-r_ac)>0);???   ((r_ac-r_min>0)) hhj--20200528
         r_min = sqrt(min(sum((mic_info-source_info(I, 1:3)).^2, 2)));
         min_shift = round(Fs*(r_ac-r_min)/c) * ((r_ac-r_min>0));
@@ -91,16 +91,19 @@ for I = 1:N_source
         % dBW - 20*log10(p_0) = dBSPL. At the center of the array Wc
         Wc = wgn(min_shift + Fs*duration + max_shift, 1, ...
                  source_info(I, 5)+10*log10(2e-5^2)).';
-        % Éú³ÉÕóÁĞÖĞĞÄ´¦µÄÖ¸¶¨ÉùÑ¹¼¶µÄ°×ÔëÉù hhj--20200528
+%        Wc = wgn(min_shift + Fs*duration + max_shift, 1, ...
+%                  source_info(I, 5)+10*log10(2e-5^2),'linear').';
+        % ç”Ÿæˆé˜µåˆ—ä¸­å¿ƒå¤„çš„æŒ‡å®šå£°å‹çº§çš„ç™½å™ªå£° hhj--20200528
         for J = 1:N_mic
 
             r = sqrt( sum((mic_info(J, :) - source_info(I, 1:3)).^2) );
             ph = (r-r_ac)/c;
             N_shift = round(ph*Fs);
-            p(J, :) = p(J, :) + Wc(1+min_shift+N_shift:Fs*duration+N_shift+min_shift)*r_ac/r;
+            p(J, :) = p(J, :) + direct_amp(1,J)*Wc(1+min_shift+N_shift:Fs*duration+N_shift+min_shift)*r_ac/r;
+%             p1(J, :) = p1(J, :) + Wc(1+min_shift+N_shift:Fs*duration+N_shift+min_shift)*r_ac/r;
         end
         
-    else% µ¥ÆµĞÅºÅ
+    else% å•é¢‘ä¿¡å·
         % From SPL = 20*log10(amp/2e-5), we scale by the distance from
         % source to array center to obtain given SPL at center.
         amp = r_ac*2e-5*10^(source_info(I, 5)/20);
@@ -111,21 +114,22 @@ for I = 1:N_source
         if coherent
             randphase = zeros([1,N_samples]);
         else
-            randphase = randn(1,N_samples);
+            randphase =3*randn(1,N_samples);
         end
         for J = 1:N_mic
 
 %             r = sqrt( sum((mic_info(J, :) - source_info(I, 1:3)).^2) );
-%             ph = r/c; %UÎª0Ê±£¬¿ÉÒÔÊ¹ÓÃµÄ¼ò»¯¹«Ê½
+%             ph = r/c; %Uä¸º0æ—¶ï¼Œå¯ä»¥ä½¿ç”¨çš„ç®€åŒ–å…¬å¼
 %             r1(J, :) = sqrt( dot(M, mic_info(J, :) - source_info(I, 1:3))^2 + ...
 %                 beta_sq*dot(mic_info(J, :) - source_info(I, 1:3), mic_info(J, :) - source_info(I, 1:3)) );
             r = sqrt( dot(M, mic_info(J, :) - source_info(I, 1:3))^2 + ...
                 beta_sq*dot(mic_info(J, :) - source_info(I, 1:3), mic_info(J, :) - source_info(I, 1:3)) );
             ph = ( -dot(M, mic_info(J, :) - source_info(I, 1:3)) + r ) / (c * beta_sq);
             
-            p1(J, :) = p1(J, :) + sqrt(2)*amp*cos(2*pi*(source_info(I, 4)*(t))+randphase)/r;
-            %hhj  ·½ÏòĞÔÏµÊı
-            p(J, :) = p(J, :) + direct_amp(I,J)*sqrt(2)*amp*cos(2*pi*(source_info(I, 4)*(t-ph))+randphase)/r;
+%             p2(J, :) = p1(J, :) + sqrt(2)*amp*cos(2*pi*(source_info(I, 4)*(t-ph)))/r;
+%             p(J, :) = p1(J, :) + sqrt(2)*amp*cos(2*pi*(source_info(I, 4)*(t-ph))+randphase)/r;
+            %hhj  æ–¹å‘æ€§ç³»æ•°
+            p(J, :) = p(J, :) + direct_amp(1,J)*sqrt(2)*amp*cos(2*pi*(source_info(I, 4)*(t-ph))+randphase)/r;
 %             p(J, :) = p(J, :) + sqrt(2)*amp*cos(2*pi*(source_info(I, 4)*(t-ph))+randphase)/r;
             % Simulate dipole, still needs works
 %             p(J, :) = p(J, :) + (0.0001*(2*pi*source_info(I, 4)/c)^2*sin(acos(source_info(I, 3)/r)))*sqrt(2)*amp*cos(2*pi*source_info(I, 4)*(t-ph))/r;
