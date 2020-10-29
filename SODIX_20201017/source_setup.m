@@ -1,31 +1,33 @@
-function [source_info,num_source_info] = source_setup(bf_freq, souSPL, wavelength)
+function [source_info,num_source_info] = source_setup(num_source_class, source_info_loc,source_info_num, souSPL, wavelength)
 
 
-
-%Ô´ÉèÖÃ
-%Ô´ÀàĞÍ£º½øÆø¿Ú1£»»úÉí2£»Åç×ì3£¬ÅçÁ÷4
-
-num_source_class = [1 0 0 0];%Ô´ÀàĞÍ£º½øÆø¿Ú1£»»úÉí2£»Åç×ì3£¬ÅçÁ÷4
-jet_gas = 5;%ÅçÁ÷ÔëÉùÔ´ÇúÏß·½²î
-% source_info_set(:,1) = [-5.4 -2.2 0 2];%Ô´Î»ÖÃx
-source_info_set(:,1) = [-1.320 0.04 1.06 2];%Ô´Î»ÖÃ[-1.320 0.04 1.06 2]
-source_info_set(:,2) = [0 0 0 0];%Ô´Î»ÖÃy
-source_info_set(:,3) = [0 0 0 0];%Ô´Î»ÖÃz
-source_info_set(:,4) = ones(4,1)*bf_freq;%Ô´ÆµÂÊ
-source_info_set(:,5) = ones(4,1)*souSPL;%Ô´ÉùÑ¹
-source_info_set(:,6) = [35 35 35 35];%Ô´·½ÏòĞÔÖ¸ÏòĞÎ×´¡ª¡ª¸ßË¹·½²î
-source_info_set(:,7) = [120 90 60 45];%Ô´·½ÏòĞÔÖ¸Ïò×î´óÖµ¡ª¡ª¸ßË¹Æ½¾ù
-source_info_set(:,8) = [1 1 1 1];%Ô´·½ÏòĞÔ·ù¶È
-source_info_set(:,9) = [1 2 3 4];%Ô´·½ÏòĞÔ×é±ğ
-source_info_set(:,10) = [3 3 3 25];%Ã¿×éÔ´¸öÊı
-source_info_set(:,11) = [1/20*wavelength 1/20*wavelength 1/20*wavelength 10/20*wavelength];%Ã¿×éÔ´¼ä¸ô
-%% µãÔ´
+%æºè®¾ç½®
+%æºç±»å‹ï¼šè¿›æ°”å£1ï¼›æœºèº«2ï¼›å–·å˜´3ï¼Œå–·æµ4
+% source_info = zeros(1,11);
+% num_source_class = [1 1 1 1];%æºç±»å‹ï¼šè¿›æ°”å£1ï¼›æœºèº«2ï¼›å–·å˜´3ï¼Œå–·æµ4
+jet_gas = 2;%å–·æµå™ªå£°æºæ›²çº¿æ–¹å·®5
+% source_info_set(:,1) = [-5.4 -2.2 0 2];%æºä½ç½®x
+source_info_set(:,1) = source_info_loc;%æºä½ç½®[-1.320 0.04 1.06 2]
+source_info_set(:,2) = [0 0 0 0];%æºä½ç½®y
+source_info_set(:,3) = [0 0 0 0];%æºä½ç½®z
+% source_info_set(:,4) = ones(4,1)*bf_freq;%æºé¢‘ç‡
+source_info_set(:,4) = ones(4,1)*0;%æºé¢‘ç‡
+source_info_set(:,5) = ones(4,1)*souSPL;%æºå£°å‹
+source_info_set(:,6) = [35 35 35 35];%æºæ–¹å‘æ€§æŒ‡å‘å½¢çŠ¶â€”â€”é«˜æ–¯æ–¹å·®
+source_info_set(:,7) = [120 90 60 45];%æºæ–¹å‘æ€§æŒ‡å‘æœ€å¤§å€¼â€”â€”é«˜æ–¯å¹³å‡
+source_info_set(:,8) = [1 1 1 1];%æºæ–¹å‘æ€§å¹…åº¦
+source_info_set(:,9) = [1 2 3 4];%æºæ–¹å‘æ€§ç»„åˆ«
+source_info_set(:,10) = source_info_num;%æ¯ç»„æºä¸ªæ•°
+source_info_set(:,11) = [1/20*wavelength 1/20*wavelength 1/20*wavelength 2/20*wavelength];%æ¯ç»„æºé—´éš”
+%%%%%%ä¸æ‡‚ï¼Ÿå–·æµæºè®¾ç½®é—´éš”å¤§çš„æ—¶å€™ï¼Œå‡ºç°è§’åº¦åå·®ï¼Ÿä¸ªæ•°å¤§çš„æ—¶å€™ä¹Ÿ
+%% ç‚¹æº
 for I=1:3
     if num_source_class(I)==1
         num_source = source_info_set(I,10);
 %         source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,1) = [-source_info_set(I,11)+source_info_set(I,1),source_info_set(I,1),source_info_set(I,11)+source_info_set(I,1)];
         source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,1) = (source_info_set(I,1):source_info_set(I,11):source_info_set(I,1)+source_info_set(I,11)*(source_info_set(I,10)-1));
-        source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,4) = ones(source_info_set(I,10),1)*bf_freq;
+%         source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,4) = ones(source_info_set(I,10),1)*bf_freq;
+        source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,4) = ones(source_info_set(I,10),1)*0;
         source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,5) = ones(source_info_set(I,10),1)*source_info_set(I,5);
         source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,6) = ones(source_info_set(I,10),1)*source_info_set(I,6);
         source_info(1+(I-1)*num_source:num_source+(I-1)*num_source,7) = ones(source_info_set(I,10),1)*source_info_set(I,7);
@@ -35,31 +37,42 @@ for I=1:3
     end
     
 end
-num_source_info = size(source_info,1);
-%% ÅçÁ÷Ô´
+% num_source_info = size(source_info,1);
+if sum(num_source_class(1:3))==0
+    num_source_info = 0;
+else
+    num_source_info = size(source_info,1);
+end
+    
+%% å–·æµæº
 J=4;
+
 jet_locx = zeros(1,source_info_set(4,10));
 if num_source_class(J)==1
-    
+%     sou_rand =sort(2*(rand(source_info_set(4,10),1)-0.5));
+%     source_info_1(:,1) = sou_rand;
     num_source = source_info_set(J,10);
     for I=1:num_source
-        jet_locx(I) = (I-3)*source_info_set(J,11)+source_info_set(J,1);    %3Îª¸ßË¹¾ùÖµÇ°ÃæµÄÔ´¸öÊı
+        jet_locx(I) = (I-5)*source_info_set(J,11)+source_info_set(J,1);    %3ä¸ºé«˜æ–¯å‡å€¼å‰é¢çš„æºä¸ªæ•°
 %         I=I+1;
     end
     jet_amp =  1*gaussmf(jet_locx,[jet_gas source_info_set(J,1)]);
-    jet_amp1 =  1*gaussmf((1:0.1:11),[jet_gas source_info_set(J,1)]);
+    jet_amp1 =  1*gaussmf((-2:0.1:11),[jet_gas source_info_set(J,1)]);
     figure(99)
     plot(jet_locx,jet_amp, '*')
     hold on
-    plot((1:0.1:11),jet_amp1)
+    plot((-2:0.1:11),jet_amp1)
     source_info(num_source_info+1:num_source_info+num_source,1) = jet_locx.';
-    source_info(num_source_info+1:num_source_info+num_source,4) = ones(source_info_set(J,10),1)*bf_freq;
+%     source_info(num_source_info+1:num_source_info+num_source,4) = ones(source_info_set(J,10),1)*bf_freq;
+    source_info(num_source_info+1:num_source_info+num_source,4) = ones(source_info_set(J,10),1)*0;
     source_info(num_source_info+1:num_source_info+num_source,5) = ones(source_info_set(J,10),1)*source_info_set(J,5);
-    source_info(num_source_info+1:num_source_info+num_source,6) = ones(source_info_set(J,10),1)*source_info_set(J,6);
+    source_info(num_source_info+1:num_source_info+num_source,6) = ones(source_info_set(J,10),1)*source_info_set(J,6);%æºæ–¹å‘æ€§æŒ‡å‘å½¢çŠ¶â€”â€”é«˜æ–¯æ–¹å·®
     source_info(num_source_info+1:num_source_info+num_source,7) = ones(source_info_set(J,10),1)*source_info_set(J,7);
     source_info(num_source_info+1:num_source_info+num_source,8) = jet_amp;
     source_info(num_source_info+1:num_source_info+num_source,9) = ones(source_info_set(J,10),1)*source_info_set(J,9);
 end
+
+
 num_source_info = size(source_info,1);
 source_info_tem = zeros(1,size(source_info,2));
 
