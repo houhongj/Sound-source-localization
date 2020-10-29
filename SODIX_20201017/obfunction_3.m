@@ -1,4 +1,5 @@
-function [fun_syms, x, dfun_syms, djm0] = obfunction_3(num_syms, x_t, CSM, mic_positions, frequencies, ...
+% Modify the regularization conditions and derivativesï¼Œx
+function [fun_syms, x, dfun_syms, djm0] = obfunction_4(num_syms, x_t, CSM, mic_positions, frequencies, ...
     plane_distance, c)
 
 syms fun_syms 
@@ -7,19 +8,10 @@ N_mic = size(mic_positions, 1);
 N_freqs = length(frequencies);
 x_t(:,3)=plane_distance;
 
-% for j=1:num_syms      %¶¨Òå±äÁ¿j=1:num_syms
-%     for i=1:N_mic
-%         
-%         eval(['syms x',num2str(j),num2str(0),num2str(i)]);
-%         eval(['x(j,i)=x',num2str(j),num2str(0),num2str(i)]);
-%         clear( ['x',num2str(j),num2str(0),num2str(i)]);
-%     end
-% %     eval(['S{i}=x',num2str(i)]);
-% %     eval(['x{i}=x',num2str(i)]);
-% end
+
 x=sym('x',[num_syms,N_mic]);
 fun_syms = 0;
-%Ä¿±êº¯Êı
+%ç›®æ ‡å‡½æ•°
 reverseStr = '';
 G = zeros( size(x_t, 1),N_mic);
 r_ti = zeros( size(x_t, 1),N_mic);
@@ -32,12 +24,12 @@ for K = 1:N_freqs
     for I = 1:N_mic
          r_ti(:, I) = sqrt( (x_t(:,1) - mic_positions(I,1)).^2 + ...
                      (x_t(:,2) - mic_positions(I,2)).^2 + ...
-                     (x_t(:,3) - mic_positions(I,3)).^2 );%É¨ÃèµãÓëÃ¿¸öÂó¿Ë·çµÄ¾àÀë
+                     (x_t(:,3) - mic_positions(I,3)).^2 );%æ‰«æç‚¹ä¸æ¯ä¸ªéº¦å…‹é£çš„è·ç¦»
                  
     end
-    %·¢¶¯»úÊµ¼Ê²âÊÔĞèĞŞ¸Äµ¼ÏòÊ¸Á¿£¬°üÀ¨U   ref.2008
-    G = exp(1i*k*(r_ti))./(r_ti);
-    %% ¹¹½¨×îĞ¡»¯Ä¿±êº¯Êı
+    %å‘åŠ¨æœºå®é™…æµ‹è¯•éœ€ä¿®æ”¹å¯¼å‘çŸ¢é‡ï¼ŒåŒ…æ‹¬U   ref.2008
+    G = exp(-1i*k*(r_ti))./(r_ti);
+    %% æ„å»ºæœ€å°åŒ–ç›®æ ‡å‡½æ•°
 %     ref.2012--An extended formulation of the SODIX method with application to aeroengine broadband noise
 
 
@@ -47,13 +39,13 @@ for K = 1:N_freqs
     
 %     fun = norm(err_C,'fro')^2;
 %     fun = sum(sum(err_C.*conj(err_C)));
-    fun = sum(sum( (real(CSM) - real(CSM_mod)).^2 )) + ...
+fun = sum(sum( (real(CSM) - real(CSM_mod)).^2 )) + ...
     sum(sum( (imag(CSM) - imag(CSM)).^2 ));
-
-    %% Ä¿±êº¯Êıµ¼Êı
-    %²Î¼û¹«Ê½6£¬Èı²¿·Ö
+% fun = sum(sum( (real(CSM) - real(CSM_mod)).^2 )) ;
+    %% ç›®æ ‡å‡½æ•°å¯¼æ•°
+    %å‚è§å…¬å¼6ï¼Œä¸‰éƒ¨åˆ†
 %     GG_mod = (G.*conj(G));%
-    err_C_0diag = err_C-diag(diag(err_C));
+%     err_C_0diag = err_C-diag(diag(err_C));
     DrmGmod = x.*G;
     DrlGmod = conj(G);
 
@@ -63,50 +55,53 @@ for K = 1:N_freqs
 %     dfun = dfun1+dfun2+dfun3;
     
     
-    %ref.2019£¬
+    %ref.2019ï¼Œ
     dfun=-4*real((DrmGmod*(err_C.')).*DrlGmod);
-%     dfun=-4*real((DrmGmod*(err_C)).*DrlGmod);
 
 
 
 
-    %% Æ½»¬º¯Êı/ÕıÔò»¯Ìõ¼ş
+
+    %% å¹³æ»‘å‡½æ•°/æ­£åˆ™åŒ–æ¡ä»¶
 %     ref.Noise Source Analysis of an Aeroengine with a New Inverse Method SODIX
-    %Æ½»¬º¯Êı1 ---¸ü¾ùÔÈµÄ·½ÏòĞÔ/ÏàÁÚÂó¿Ë·ç±ä»»²»ÄÜÌ«´ó
-%     A_1 = zeros(num_syms,N_mic+2);
-%     A_1(:,3:N_mic+2) = A;
-%     A_1(:,N_mic+3:N_mic+4) =0;
-%     A_2 = A_1(:,2:end-1);
-%     Djm_1 = A_2(:,2:end-1);
-%     Djm_0 = A_2(:,1:end-2);
-%     Djm_2 = A_2(:,3:end);
-%     Djm = Djm_1-0.5*(Djm_0+Djm_2);
+    %å¹³æ»‘å‡½æ•°1 ---æ›´å‡åŒ€çš„æ–¹å‘æ€§/ç›¸é‚»éº¦å…‹é£å˜æ¢ä¸èƒ½å¤ªå¤§
+    
+    A_1(:,3:N_mic+2) = x;
+    A_1(:,N_mic+3:N_mic+4) =0;
+    A_2 = A_1(:,2:end-1);
+    Djm_1 = A_2(:,2:end-1);
+    Djm_0 = A_2(:,1:end-2);
+    Djm_2 = A_2(:,3:end);
+    Djm = Djm_1-0.5*(Djm_0+Djm_2);
 % 
-%     G1 = sum(sum( (Djm).^2 ));
+    G1 = sum(sum( (Djm).^2 ));
 % 
-%     dDjm_1 = A_1(:,1:end-4);
-%     dDjm_2 = A_1(:,2:end-3);
-%     dDjm_3 = A_1(:,3:end-2);
-%     dDjm_4 = A_1(:,4:end-1);
-%     dDjm_5 = A_1(:,5:end);
-%     dG1 = 0.5*dDjm_1-2*dDjm_2+3*dDjm_3-2*dDjm_4+0.5*dDjm_5;
+    dDjm_1 = A_1(:,1:end-4);
+    dDjm_2 = A_1(:,2:end-3);
+    dDjm_3 = A_1(:,3:end-2);
+    dDjm_4 = A_1(:,4:end-1);
+    dDjm_5 = A_1(:,5:end);
+    dG1 = 0.5*dDjm_1-2*dDjm_2+3*dDjm_3-2*dDjm_4+0.5*dDjm_5;
 %     
 %     
-%     %Æ½»¬º¯Êı2 ---Æ½»¬Ô´Ç¿¶ÈÑØ·¢¶¯»úÖáÏßµÄ±ä»¯
-%     Dj_1m = A(2:end-1,:);
-%     Dj_0m = A(1:end-2,:);
-%     Dj_2m = A(3:end,:);
-%     Dj_m = Dj_1m-0.5*(Dj_0m+Dj_2m);
-% 
-%     G2 = sum(sum( (Dj_m).^2 ));
-%     
-%     dDj_1m = A(1:end-4,:);
-%     dDj_2m = A(2:end-3,:);
-%     dDj_3m = A(3:end-2,:);
-%     dDj_4m = A(4:end-1,:);
-%     dDj_5m = A(5:end,:);
-%     dG2(3:num_syms-2,:) = 0.5*dDj_1m-2*dDj_2m+3*dDj_3m-2*dDj_4m+0.5*dDj_5m;
-%     dG2(num_syms-1:num_syms,:) =0;
+%     %å¹³æ»‘å‡½æ•°2 ---å¹³æ»‘æºå¼ºåº¦æ²¿å‘åŠ¨æœºè½´çº¿çš„å˜åŒ–
+    A_3(3:num_syms+2,:) = x;
+    A_3(num_syms+3:num_syms+4,:) =0;
+    A_4 = A_3(2:end-1,:);
+    Dj_1m = A_4(2:end-1,:);
+    Dj_0m = A_4(1:end-2,:);
+    Dj_2m = A_4(3:end,:);
+    Dj_m = Dj_1m-0.5*(Dj_0m+Dj_2m);
+
+    G2 = sum(sum( (Dj_m).^2 ));
+    
+    dDj_1m = A_3(1:end-4,:);
+    dDj_2m = A_3(2:end-3,:);
+    dDj_3m = A_3(3:end-2,:);
+    dDj_4m = A_3(4:end-1,:);
+    dDj_5m = A_3(5:end,:);
+    dG2    = 0.5*dDj_1m-2*dDj_2m+3*dDj_3m-2*dDj_4m+0.5*dDj_5m;
+
     %% 
 %     fun_syms = fun+0.0001*size(x_t,1)*G1+0.05*G2;
 %     dfun_syms = dfun+0.0001*size(x_t,1)*dG1+0.05*dG2;
@@ -114,23 +109,13 @@ for K = 1:N_freqs
 %     dfun_syms = dfun+0.0001*size(x_t,1)*dG1;
     fun_syms = fun;
     dfun_syms = dfun;
-    %% ³õÊ¼Öµ
+    %% åˆå§‹å€¼
 %     ref. Advancements in the source localization method SODIX and application to short cowl engine data
     rjm = (1./(4*pi*r_ti)).^2;
     sumrjm = sum(rjm,1);
-    
-%     diagCSM=diag(CSM);
-    djm0_t = ((real(diag(CSM)).')./sumrjm).^0.5;%Ô­ÎÄÖĞÎªÃ»ÓĞÆ½·½Ïî£¬0.5£¬ÏÖÔÚÇó½âÆ½·½Ïî¡£0.25
+    djm0_t = ((real(diag(CSM)).')./sumrjm).^0.5;%åŸæ–‡ä¸­ä¸ºæ²¡æœ‰å¹³æ–¹é¡¹ï¼Œ0.5ï¼Œç°åœ¨æ±‚è§£å¹³æ–¹é¡¹ã€‚0.25
     djm0 = repmat(djm0_t,num_syms ,1);
     
-%     sumrjm = sum(rjm,2);
-%     djm0 = ((real(diag(CSM)).')./sumrjm).^0.25;
-%     djm0 = ones(num_syms,N_mic);
-    
-%     fun1 = double(subs(fun, x, djm0));
-%     G11 = size(x_t,1)*double(subs(G1, x, djm0));
-%     G22 = double(subs(G2, x, djm0));
-%     fun_syms = double(subs(dfun_syms, x, djm0));
 
 
 end
